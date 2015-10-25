@@ -1,97 +1,282 @@
 /* ----------------------------------------------------------------------------
- * Copyright &copy; 2015 Ben Blazak <bblazak@fullerton.edu>
- * Released under the [MIT License] (http://opensource.org/licenses/MIT)
- * ------------------------------------------------------------------------- */
+* Copyright &copy; 2015 Duy Nguyen <andy21996@csu.fullerton.edu>
+* Released under the [MIT License] (http://opensource.org/licenses/MIT)
+* ------------------------------------------------------------------------- */
 
-/**
- * An interface for lists containing `int`s.
- *
- *
- * Implementation notes:
- *
- * - In keeping with C++ conventions for arrays, the index of the first `Node`
- *   is 0.
- *
- * - An index passed to any of these functions is normalized before use by
- *   taking `index %= length()`, and then `index += length()` if necessary to
- *   make `index` positive.
- *     - This has the effect of making all integers valid indices, so we don't
- *       have to worry about index out of bounds errors.
- *     - This also has the effect of making the list appear circular, which can
- *       be convenient (e.g. the last element will be the `-1`st element, as in
- *       Python).
- *     - In an implementation, it would probably be better to keep a variable,
- *       `mLength`, and use that instead of `length()` in any calculations.
- *
- * - All objects are allocated on the heap (or free store).  Errors are ignored
- *   (for now) but if `new` is used and allocation fails, a `std::bad_alloc`
- *   will be thrown (or simply not caught).
- *
- *
- * Notes:
- *
- * - We'll probably generalize this class using templates later.
- *
- * - In this class, we use `m` (for "member") as a prefix for private data
- *   members.
- *     - It is common practice in C++ to prefix or suffix the names of private
- *       data members in order to 1) make it obvious that they are private data
- *       members, and 2) avoid name conflicts with functions (e.g. `mLength`
- *       could not be called simply `length` because `length()` is a function,
- *       and `length` is short for `&length`, which is the address of the
- *       function `length()`) and other data members.
- *
- * - We use `length()` instead of `getLength()` in keeping with the `length()`
- *   method on `string`, and because it very well could be more than just a
- *   getter: if we the implementation doesn't have an `mLength` variable, or
- *   similar, `length()` will have to count the elements in the list.
- *
- * - What exactly a `Node` is will vary depending on the implementation, so
- *   each implementation must create its own.
- *     - For example, a singly linked list might have `Node` defined as
- *       `private` inside its class, as a `struct` containing a `Node * next`
- *       and an `int value`.  A doubly linked list would also need its `Node`
- *       to contain a `Node * previous`.
- */
+#include "stdafx.h"
+#include "list1.h"
+#include <iostream>
+using std::cout;
+using std::endl;
 
-#ifndef LIST_H
-#define LIST_H
-// ----------------------------------------------------------------------------
+int main()
+{
+	List1 * l1 = new List1;
 
-class List {
-    public:
+	// Test insert function
+	for (int i = 1; i <= 10; i++)
+	{
+		l1->insert(i, i * 10);
+	}
 
-        virtual ~List() = default;
-        /**
-         * Destruct a list, first destructing all elements of the list.
-         */
+	l1->print();
 
-        virtual int length() const = 0;
-        /**
-         * Returns the number of elements in the list.
-         */
+	// Test peek function
+	for (int i = 1; i <= 10; i++)
+		cout << "Value of Node #" << i << " is: " << l1->peek(i) << endl; 
 
-        virtual void insert(int index, const int value) = 0;
-        /**
-         * Insert the value in the list so that its `Node` has index `index`
-         * (normalized as described above).
-         */
+	// Test remove function for invalid Node
+	if (l1->remove(15) == 0)
+		cout << "15 is out of index range \n";
 
-        virtual int remove(int index) = 0;
-        /**
-         * Remove the `Node` at `index` (normalized as described above) from
-         * the list, and return the value it contained (or `0` if the list is
-         * empty).
-         */
+	// Test remove function for last Node
+	if (l1->remove(10) > 0)
+	{
+		cout << "The list after the Node #10 was removed: \n";
+		l1->print();
+	}
 
-        virtual int peek(int index) const = 0;
-        /**
-         * Return the value inside the `Node` at `index` (normalized as
-         * described above) (or return `0` if the list is empty), without
-         * modifying the list.
-         */
+	// Test remove function for middle Node
+	if (l1->remove(3) > 0)
+	{
+		cout << "The list after the Node #3 was removed: \n";
+		l1->print();
+	}
+
+	// Test remove function for first Node
+	if (l1->remove(1))
+	{
+		cout << "The list after the Node #1 was removed: \n";
+		l1->print();
+	}
+	return 0;
+}
+-------------------------------------------------------------------
+List1.h
+#ifndef LIST1_H
+#define LIST1_H
+
+#include "list.h"
+
+class Node
+{
+public:
+	Node();
+	Node(const Node& nextNode, int myValue);
+	~Node();
+	Node * getNext() const;
+	int getValue() const;
+	void setNext(Node * nextNode);
+	void setValue(int newValue);
+
+private:
+	Node * next;
+	int value;
 };
 
-// ----------------------------------------------------------------------------
-#endif  // LIST_H
+class List1 : public List
+{
+public:
+	List1();
+	~List1();
+	int length() const;
+	void insert(int index, const int value);
+	int remove(int index);
+	int peek(int index) const;
+	Node * getmHead() const;
+	void print() const;
 
+private:
+	Node * mHead;
+	int mLength;
+};
+
+#endif
+-------------------------------------------------------------------
+List1.cpp
+#include "stdafx.h"
+#include <iostream>
+#include "list1.h"
+using std::cout;
+using std::endl;
+
+Node::Node()
+{
+	next = NULL;
+	value = 0;
+}
+Node::Node(const Node& nextNode, int myValue)
+{
+	*next = nextNode;
+	value = myValue;
+}
+Node::~Node() {}
+Node *Node::getNext() const
+{
+	return next;
+}
+int Node::getValue() const
+{
+	return value;
+}
+void Node::setNext(Node * nextNode)
+{
+	next = nextNode;
+}
+void Node::setValue(int newValue)
+{
+	value = newValue;
+}
+
+List1::List1()
+{
+	mHead = NULL;
+	mLength = 0;
+}
+List1::~List1() {}
+int List1::length() const
+{
+	return mLength;
+}
+void List1::insert(int index, const int value)
+{
+	if (index <= 0 || index > mLength + 1)
+		cout << "Error \n";
+	else
+	{
+		Node * newNode = new Node;
+		newNode->setValue(value);
+		if (index == 1)
+		{
+			newNode->setNext(mHead);
+			mHead = newNode;
+			mLength++;
+			newNode = NULL;
+		}
+		else // index >= 2
+		{
+			if (mLength == 0)
+			{
+				mHead = newNode;
+				mLength++;
+			}
+			else if (mLength == 1)
+			{
+				mHead->setNext(newNode);
+				mLength++;
+			}
+			else // mLength >= 2
+			{
+				Node * traverse = mHead;
+				Node * current = mHead->getNext();
+				for (int i = 2; i < index; i++)
+				{
+					traverse = traverse->getNext();
+					current = current->getNext();
+				}
+				newNode->setNext(current);
+				traverse->setNext(newNode);
+				mLength++;
+				newNode = NULL;
+				current = NULL;
+			}
+		}
+	}
+
+}
+int List1::remove(int index)
+{
+	if (index <= 0 || index > mLength)
+		return 0;
+	else if (index == 1)
+	{
+		Node * delNode = mHead;
+		int delValue = delNode->getValue();
+		mHead = delNode->getNext();
+		mLength--;
+		delete delNode;
+		delNode = NULL;
+		return delValue;
+	}
+	else // index > 1
+	{
+		Node * current = mHead;
+		for (int i = 1; i <= index - 2; i++)
+			current = current->getNext();
+		Node * delNode = current->getNext();
+		int delValue = delNode->getValue();
+		current->setNext(delNode->getNext());
+		mLength--;
+		delete delNode;
+		delNode = NULL;
+		return delValue;
+	}
+}
+int List1::peek(int index) const
+{
+	if (mLength == 0)
+		return 0;
+	else
+	{
+		Node * current = mHead;
+		for (int i = 1; i < index; i++)
+			current = current->getNext();
+		return current->getValue();
+		current = NULL;
+	}
+}
+Node *List1::getmHead() const
+{
+	return mHead;
+}
+void List1::print() const
+{
+	Node * current = mHead;
+	for (int i = 1; i <= mLength; i++)
+	{
+		cout << current->getValue() << " ";
+		current = current->getNext();
+	}
+	cout << endl;
+}
+----------------------------------------------------
+list.h
+#ifndef LIST_H
+#define LIST_H
+
+class List 
+{
+public:
+
+	virtual ~List() = default;
+	/**
+	* Destruct a list, first destructing all elements of the list.
+	*/
+
+	virtual int length() const = 0;
+	/**
+	* Returns the number of elements in the list.
+	*/
+
+	virtual void insert(int index, const int value) = 0;
+	/**
+	* Insert the value in the list so that its `Node` has index `index`
+	* (normalized as described above).
+	*/
+
+	virtual int remove(int index) = 0;
+	/**
+	* Remove the `Node` at `index` (normalized as described above) from
+	* the list, and return the value it contained (or `0` if the list is
+	* empty).
+	*/
+
+	virtual int peek(int index) const = 0;
+	/**
+	* Return the value inside the `Node` at `index` (normalized as
+	* described above) (or return `0` if the list is empty), without
+	* modifying the list.
+	*/
+};
+
+#endif  // LIST_H
