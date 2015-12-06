@@ -99,4 +99,3 @@ int List1::peek(int index) const {
 
     return n->value;
 }
-
