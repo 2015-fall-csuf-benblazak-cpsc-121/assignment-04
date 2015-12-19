@@ -1,102 +1,106 @@
-/* ----------------------------------------------------------------------------
- * Copyright &copy; 2015 Ben Blazak <bblazak@fullerton.edu>
- * Released under the [MIT License] (http://opensource.org/licenses/MIT)
- * ------------------------------------------------------------------------- */
+#include "List1.h"
 
-#include "list1.h"
+List1::List1() : mHead(nullptr), mLength(0) {}			
 
-// ----------------------------------------------------------------------------
-// constructors and destructors
-// ----------------------------------------------------------------------------
-
-List1::List1() : mHead(nullptr), mLength(0) {}
-
-List1::~List1() {
-    while (mHead != nullptr)
-        remove(0);
+int List1::length() const {								
+	return mLength;
+	
 }
 
-// ----------------------------------------------------------------------------
-// getters and setters
-// ----------------------------------------------------------------------------
-
-int List1::length() const { return mLength; }
-
-// ----------------------------------------------------------------------------
-// public list operations
-// ----------------------------------------------------------------------------
-
-void List1::insert(int index, const int value) {
-    Node * n = new Node;  // may throw `std::bad_alloc`
-    n->value = value;
-
-    mLength++;
-    index %= mLength;
-    if (index < 0)
-        index += mLength;
-
-    if (index == 0) {
-        // insert as first element
-        n->next = mHead;
-        mHead = n;
-
-    } else {
-        // find the previous element
-        Node * p = mHead;
-        for (int i = 1; i < index; i++)
-            p = p->next;
-
-        // insert after
-        n->next = p->next;
-        p->next = n;
-    }
+void List1::insert(int index, const int value) {		
+	mLength++;
+	
+		Node * n = new Node;
+	(*n).value = value;
+	
+		index %= mLength;
+	if (index < 0) {
+		index += mLength;
+		
+	}
+	
+		if (index == 0) {
+		(*n).next = mHead;		
+		mHead = n;			
+		
+	}
+	else {
+		Node * counterNode = mHead;
+		for (int a = 1; a < index; a++) {
+			counterNode = (*counterNode).next;
+			
+		}
+		(*counterNode).next = n;					
+		(*n).next = (*counterNode).next;				
+		
+	}
+	
+		
+		
+		
 }
 
-int List1::remove(int index) {
-    if (mHead == nullptr)
-        return 0;  // list is empty
-
-    index %= mLength;
-    if (index < 0)
-        index += mLength;
-
-    Node * n;
-    int value;
-
-    if (index == 0) {
-        // remove first element
-        n = mHead;
-        mHead = mHead->next;
-
-    } else {
-        // find the previous element
-        Node * p = mHead;
-        for (int i = 1; i < index; i++)
-            p = p->next;
-
-        // remove the one after
-        n = p->next;
-        p->next = p->next->next;
-    }
-
-    value = n->value;
-
-    mLength--;
-    delete n;
-    return value;
+int List1::remove(int index) {							
+	index %= mLength;
+	if (index < 0) {
+		index += mLength;
+		
+	}
+	
+		int storedValue;
+	Node * counterNode;
+	
+		if (index == 0) {					
+		counterNode = mHead;
+		mHead = (*counterNode).next;
+		
+	}
+	else {
+		Node * previousNode = mHead;
+		for (int a = 0; a < index - 1; a++) {
+			previousNode = (*previousNode).next;
+			
+		}
+		counterNode = (*previousNode).next;
+		(*previousNode).next = (*counterNode).next;
+		
+	}
+	
+		mLength--;
+	storedValue = (*counterNode).value;
+	delete counterNode;
+	return storedValue;
+	
 }
 
-int List1::peek(int index) const {
-    if (mHead == nullptr)
-        return 0;  // list is empty
-
-    index = (index < 0) ? index % mLength + mLength : index % mLength;
-
-    // find the element
-    Node * n = mHead;
-    for (int i = 0; i < index; i++)
-        n = n->next;
-
-    return n->value;
+int List1::peek(int index) const {						
+	index %= mLength;
+	if (index < 0) {
+		index += mLength;
+		
+	}
+	
+		if (mLength == 0) {
+		return 0;
+		
+	}
+	else {
+		Node * counterNode = mHead;
+		for (int a = 0; a < index; a++) {
+			counterNode = (*counterNode).next;
+			
+		}
+		return (*counterNode).value;
+		
+	}
+	
 }
 
+List1::~List1() {										
+		
+		while (mLength != 0) {
+		remove(0);
+		
+	}
+	
+};
